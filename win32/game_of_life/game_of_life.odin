@@ -45,8 +45,7 @@ MAKEWORD :: win32.MAKEWORD
 
 // constants
 TITLE :: "Game Of Life"
-COLOR_MODE :: 1
-WORLD_SIZE: int2 : {64, 64}
+WORLD_SIZE: int2 : {128, 64}
 ZOOM :: 12 // pixel size
 FPS :: 20
 FADE :: false
@@ -407,12 +406,6 @@ message_loop :: proc() -> int {
 }
 
 run :: proc() -> int {
-	window := Window {
-		name          = L(TITLE),
-		size          = WORLD_SIZE * ZOOM,
-		fps           = FPS,
-		control_flags = {.CENTER},
-	}
 	game := Game {
 		tick_rate = 300 * time.Millisecond,
 		last_tick = time.now(),
@@ -420,13 +413,20 @@ run :: proc() -> int {
 		colors    = {BLACK, WHITE},
 		size      = WORLD_SIZE,
 		zoom      = ZOOM,
-		window    = window,
+		window    = Window {
+			name          = L(TITLE),
+			size          = WORLD_SIZE * ZOOM,
+			fps           = FPS,
+			control_flags = {.CENTER},
+		},
 	}
-	when COLOR_MODE == 1 {
-		for i in 0 ..< palette_count {
-			game.colors[i] = color{u8(rand.int31_max(255, &rng)), u8(rand.int31_max(255, &rng)), u8(rand.int31_max(255, &rng)), 255}
-		}
+	for i in 0 ..< palette_count {
+		c := u8((255*int(i)) / (palette_count-1))
+		game.colors[i] = color{c, c, c, 255}
 	}
+
+	game.colors[0] = color{128, 64, 32, 255}
+	game.colors[1] = color{255, 128, 64, 255}
 
 	world := World{game.size.x, game.size.y, make([]u8, game.size.x * game.size.y)}
 	next_world := World{game.size.x, game.size.y, make([]u8, game.size.x * game.size.y)}
